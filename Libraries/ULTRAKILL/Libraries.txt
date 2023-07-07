@@ -1,0 +1,7 @@
+This folder contains the following Libraries:
+Assembly-CSharp.dll
+UnityEngine.dll
+UnityEngine.CoreModule.dll
+UnityEngine.InputLegacyModule.dll
+UnityEngine.InputModule.dll
+UnityEngine.IMGUIModule.dll

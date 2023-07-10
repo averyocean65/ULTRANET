@@ -4,14 +4,15 @@
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <ProjectGuid>{5C7E022A-AD61-4C27-8630-5B61C4EFF543}</ProjectGuid>
+        <ProjectGuid>{46B639CF-3A24-445A-AB14-B9072BF47085}</ProjectGuid>
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
-        <RootNamespace>ULTRANET.Client</RootNamespace>
-        <AssemblyName>ULTRANET.Client</AssemblyName>
+        <RootNamespace>ULTRANET.Core</RootNamespace>
+        <AssemblyName>ULTRANET.Core</AssemblyName>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>8</LangVersion>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,18 +34,9 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <PropertyGroup>
-      <PostBuildEvent>copy "H:\Coding Projects\C#\ULTRANET\Client\bin\Debug\ULTRANET.Client.dll" "H:\Software\Steam\steamapps\common\ULTRAKILL\BepInEx\UMM Mods\ULTRANET\ULTRANET.Client.dll" /y</PostBuildEvent>
+      <PostBuildEvent>copy "H:\Coding Projects\C#\ULTRANET\Core\bin\Debug\ULTRANET.Core.dll" "H:\Software\Steam\steamapps\common\ULTRAKILL\BepInEx\plugins\ULTRANET\ULTRANET.Core.dll" /y</PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="0Harmony">
-          <HintPath>..\Libraries\0Harmony.dll</HintPath>
-        </Reference>
-        <Reference Include="Assembly-CSharp">
-          <HintPath>..\Libraries\ULTRAKILL\Assembly-CSharp.dll</HintPath>
-        </Reference>
-        <Reference Include="BepInEx">
-          <HintPath>..\Libraries\BepInEx.dll</HintPath>
-        </Reference>
         <Reference Include="DotNetty.Buffers, Version=0.7.5.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
           <HintPath>..\packages\DotNetty.Buffers.0.7.5\lib\net472\DotNetty.Buffers.dll</HintPath>
         </Reference>
@@ -118,34 +110,11 @@
           <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
         </Reference>
         <Reference Include="System.Xml" />
-        <Reference Include="UMM">
-          <HintPath>..\Libraries\UMM.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine">
-          <HintPath>..\Libraries\ULTRAKILL\UnityEngine.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.CoreModule">
-          <HintPath>..\Libraries\ULTRAKILL\UnityEngine.CoreModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.IMGUIModule">
-          <HintPath>..\Libraries\ULTRAKILL\UnityEngine.IMGUIModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.InputLegacyModule">
-          <HintPath>..\Libraries\ULTRAKILL\UnityEngine.InputLegacyModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.InputModule">
-          <HintPath>..\Libraries\ULTRAKILL\UnityEngine.InputModule.dll</HintPath>
-        </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Plugin.cs" />
+        <Compile Include="NetworkHelpers.cs" />
+        <Compile Include="NetworkKeys.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-    </ItemGroup>
-    <ItemGroup>
-      <ProjectReference Include="..\Core\Core.csproj">
-        <Project>{46b639cf-3a24-445a-ab14-b9072bf47085}</Project>
-        <Name>Core</Name>
-      </ProjectReference>
     </ItemGroup>
     <ItemGroup>
       <None Include="App.config" />

@@ -33,9 +33,6 @@
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
-    <PropertyGroup>
-      <PostBuildEvent>copy "H:\Coding Projects\C#\ULTRANET\Core\bin\Debug\ULTRANET.Core.dll" "H:\Software\Steam\steamapps\common\ULTRAKILL\BepInEx\plugins\ULTRANET\ULTRANET.Core.dll" /y</PostBuildEvent>
-    </PropertyGroup>
     <ItemGroup>
         <Reference Include="DotNetty.Buffers, Version=0.7.5.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
           <HintPath>..\packages\DotNetty.Buffers.0.7.5\lib\net472\DotNetty.Buffers.dll</HintPath>

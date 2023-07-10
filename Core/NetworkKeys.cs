@@ -15,6 +15,7 @@
         public const string PING = "PING";
         
         public const string ROOM_CHANGE = "ROOMCHG";
+        public const string MESSAGE = "MESSAGE";
         
         public const string ERROR = "ERROR";
     }

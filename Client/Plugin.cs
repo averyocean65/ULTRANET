@@ -159,6 +159,7 @@ namespace ULTRANET.Client
         {
             Plugin.Channel = ctx.Channel;
             
+            // TODO: Use Switch Statement
             Console.WriteLine($"Received from server: {msg}");
             VariablePacket packet = msg;
             
@@ -181,6 +182,12 @@ namespace ULTRANET.Client
             if (packet.key == NetworkKeys.ROOM_CHANGE)
             {
                 HudMessageReceiver.Instance.SendHudMessage($"{packet.entity} joined \"{packet.data}\"");
+                return;
+            }
+            
+            if(packet.key == NetworkKeys.MESSAGE)
+            {
+                HudMessageReceiver.Instance.SendHudMessage(packet.data);
                 return;
             }
         }

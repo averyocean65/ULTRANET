@@ -32,9 +32,6 @@
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
-    <PropertyGroup>
-      <PostBuildEvent>copy "H:\Coding Projects\C#\ULTRANET\Client\bin\Debug\ULTRANET.Client.dll" "H:\Software\Steam\steamapps\common\ULTRAKILL\BepInEx\UMM Mods\ULTRANET\ULTRANET.Client.dll" /y</PostBuildEvent>
-    </PropertyGroup>
     <ItemGroup>
         <Reference Include="0Harmony">
           <HintPath>..\Libraries\0Harmony.dll</HintPath>

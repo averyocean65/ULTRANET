@@ -91,6 +91,13 @@ namespace ULTRANET.Server
                 NetworkHelpers.SendPacket(ctx, data);
                 return;
             }
+
+            if (packet.key == NetworkKeys.MESSAGE)
+            {
+                Console.WriteLine($"MESSAGE FROM {packet.entity}: {packet.data}");
+                packet.data = $"{packet.entity}: {packet.data.Trim()}";
+                NetworkHelpers.SendPacketAll(Channels, packet);
+            }
             
             if (packet.key == NetworkKeys.ROOM_CHANGE)
             {

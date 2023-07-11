@@ -2,7 +2,38 @@
 The Open-Source ULTRAKILL Multiplayer Mod
 
 ## What is ULTRANET?
-ULTRANET is a mod for the popular shooter [ULTRAKILL](https://store.steampowered.com/app/1229490/ULTRAKILL/) that allows multiple players to play the game togethter.
+ULTRANET is a mod for the popular shooter [ULTRAKILL](https://store.steampowered.com/app/1229490/ULTRAKILL/) that allows multiple players to play the game together.
+
+## Required Tools
+- C#-compatible IDE (like [Visual Studio](https://visualstudio.microsoft.com) or [JetBrains Rider](https://www.jetbrains.com/rider/))
+- [.NET Framework 4.7.2](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net472)
+- [BepInEx 5.X.X](https://github.com/BepInEx/BepInEx/releases/tag)
+- [Ultra Mod Manager](https://github.com/Temperz87/ultra-mod-manager/releases)
+
+## Compilation & Setup
+In order to build ULTRANET follow these steps:
+
+### First time setup:
+1. Add DLLs to `Libraries/ULTRAKILL` (read `Libraries/ULTRAKILL/Libraries.txt`)
+2. Reference the DLLs from the `Libraries` folder
+
+### Building
+1. Use the Build Feature in your IDE
+2. If the compilation fails, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://example.com)!
+
+## ULTRAKILL
+In order to use ULTRANET in ULTRAKILL follow these steps:
+
+### Setup
+1. (Optional) Create a backup of your ULTRAKILL game files
+2. Load BepInEx 5.X.X into your ULTRAKILL directory
+3. Install `Ultra Mod Manager` (UMM.dll) into `ULTRAKILL/BepInEx/plugins/UMM`
+4. Launch ULTRAKILL to initialize UMM and BepInEx
+5. Load all DotNetty, Microsoft, ULTRANET.Core and System libraries into `BepInEx/plugins/ULTRANET`
+6. Load `ULTRANET.Client` into `BepInEx/UMM Mods/ULTRANET`
+7. Launch ULTRAKILL and enable the mod
+
+If you encounter any issues, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://example.com)!
 
 ## Notices
 - [Library Notice](./Library%20Notice.md)

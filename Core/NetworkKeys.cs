@@ -14,6 +14,8 @@
         public const string PLAYER_ID = "PID";
         public const string PING = "PING";
         
+        public const string GET_PLAYER = "GETPLR";
+        
         public const string ROOM_CHANGE = "ROOMCHG";
         public const string MESSAGE = "MESSAGE";
         

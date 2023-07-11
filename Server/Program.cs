@@ -21,8 +21,9 @@ namespace ULTRANET.Server
 
                 IPAddress ip = IPAddress.Parse(args[0]);
                 ushort port = ushort.Parse(args[1]);
+                
+                // TODO: Add Server
 
-                await Server.Initialize(new IPEndPoint(ip, port));
                 Console.WriteLine("Server stopped");
             }
             catch (Exception ex)

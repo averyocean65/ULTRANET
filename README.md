@@ -20,7 +20,7 @@ In order to build ULTRANET follow these steps:
 
 ### Building
 1. Use the Build Feature in your IDE
-2. If the compilation fails, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://example.com)!
+2. If the compilation fails, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://discord.gg/rBvqHKhsB5)!
 
 ## ULTRAKILL
 In order to use ULTRANET in ULTRAKILL follow these steps:
@@ -34,7 +34,7 @@ In order to use ULTRANET in ULTRAKILL follow these steps:
 6. Load `ULTRANET.Client` into `BepInEx/UMM Mods/ULTRANET`
 7. Launch ULTRAKILL and enable the mod
 
-If you encounter any issues, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://example.com)!
+If you encounter any issues, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://discord.gg/rBvqHKhsB5)!
 
 ## Notices
 - [Library Notice](./Library%20Notice.md)

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
 using System.Threading;
+using BepInEx.Logging;
 using DotNetty.Transport.Channels;
 using Google.Protobuf;
 using ULTRANET.Core;
@@ -12,6 +13,8 @@ namespace ULTRANET.Client.Networking
     {
         private static readonly ConcurrentDictionary<uint, Player> _players = new ConcurrentDictionary<uint, Player>();
         public static IChannel Channel;
+
+        public static ManualLogSource Logger;
         public static Player LocalPlayer { get; private set; }
 
         /// <summary>
@@ -20,7 +23,6 @@ namespace ULTRANET.Client.Networking
         protected override void ChannelRead0(IChannelHandlerContext ctx, string msg)
         {
             Channel = ctx.Channel;
-
             // Parse to DynPacket
             byte[] data = Encoding.UTF8.GetBytes(msg);
             DynamicPacket packet = DynamicPacket.Parser.ParseFrom(data);
@@ -41,8 +43,10 @@ namespace ULTRANET.Client.Networking
             if (player == null)
                 return;
 
+            player.Room = arg1.Value.ToStringUtf8();
+
             HudMessageReceiver.Instance.SendHudMessage(
-                newmessage: $"Player {player.Name} switch to {arg1.Value.ToStringUtf8()}",
+                newmessage: $"Player <color=yellow>{player.Name}</color> switched to {arg1.Value.ToStringUtf8()}",
                 silent: false
             );
         }
@@ -53,10 +57,12 @@ namespace ULTRANET.Client.Networking
             Player player = Player.Parser.ParseFrom(obj.Value.ToByteArray());
 
             // Cache player
-            _players[obj.PlayerId] = player;
+            _players[player.Id] = player;
 
             // Set local player
             LocalPlayer = player;
+
+            Logger.LogInfo($"Local Player set to {LocalPlayer.Name} ({LocalPlayer.Id})");
         }
 
         private void PlayerHandler(DynamicPacket obj, PacketFlag flags)
@@ -72,7 +78,12 @@ namespace ULTRANET.Client.Networking
         {
             Player player = GetPlayer(obj.PlayerId);
             if (player == null)
-                return;
+            {
+                HudMessageReceiver.Instance.SendHudMessage(
+                    newmessage: $"[Unknown]: {obj.Value.ToStringUtf8()}",
+                    silent: true
+                );
+            }
 
             // Print message to HUD
             HudMessageReceiver.Instance.SendHudMessage(

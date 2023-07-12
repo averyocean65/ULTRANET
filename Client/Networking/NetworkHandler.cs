@@ -33,7 +33,8 @@ namespace ULTRANET.Client.Networking
                 // Connection Packet
                 Player player = new Player();
                 player.Name = username;
-                player.RoomID = 0;
+                player.Room = "";
+                player.Id = 0;
 
                 DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.CONNECT, 0, PacketFlag.None,
                     player.ToByteString());
@@ -43,14 +44,19 @@ namespace ULTRANET.Client.Networking
 
                 Plugin.Connected = true;
 
-                while (true)
-                {
-                }
+                // Wait for connection to close
+                await clientChannel.CloseCompletion;
             }
             finally
             {
                 await group.ShutdownGracefullyAsync();
             }
+        }
+
+        public static void TryDisconnect(IChannel clientChannel)
+        {
+            Plugin.Connected = false;
+            clientChannel.CloseAsync();
         }
     }
 }

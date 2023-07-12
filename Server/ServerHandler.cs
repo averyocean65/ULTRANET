@@ -17,6 +17,16 @@ namespace ULTRANET.Server
 
         private IChannel _channel;
 
+        private static int NextPlayerId { get; set; } = 0;
+
+        private void SendPacketToAll(DynamicPacket packet)
+        {
+            foreach (var channel in Channels)
+            {
+                PacketHandler.SendPacket(channel.Value, packet.ToByteArray());
+            }
+        }
+
         protected override void ChannelRead0(IChannelHandlerContext ctx, string message)
         {
             _channel = ctx.Channel;
@@ -39,17 +49,14 @@ namespace ULTRANET.Server
 
             // Player
             Player player = Players[arg1.PlayerId];
+            player.Room = scene;
 
             // Send message to all players
             DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.CHANGE_ROOM, arg1.PlayerId,
                 PacketFlag.None, ByteString.CopyFromUtf8(scene));
 
-            Console.WriteLine($"Player {player.Name} ({packet.PlayerId}) changed room to {scene}");
-
-            foreach (var channel in Channels)
-            {
-                PacketHandler.SendPacket(channel.Value, packet.ToByteArray());
-            }
+            Console.WriteLine($"Player {player.Name} ({player.Id}) changed room to {scene}");
+            SendPacketToAll(packet);
         }
 
         private void OnGetPlayer(DynamicPacket arg1, PacketFlag arg2)
@@ -67,17 +74,17 @@ namespace ULTRANET.Server
 
         private void OnPlayerMessage(DynamicPacket arg1, PacketFlag arg2)
         {
-            // Send message to all players
-            foreach (var channel in Channels)
-            {
-                PacketHandler.SendPacket(channel.Value, arg1.ToByteArray());
-            }
+            SendPacketToAll(arg1);
         }
 
         private void OnPlayerConnect(DynamicPacket obj, PacketFlag flags)
         {
             // Get player from Packet Data
             Player player = Player.Parser.ParseFrom(obj.Value.ToByteArray());
+            player.Id = (uint)NextPlayerId;
+
+            // Increment player id
+            NextPlayerId++;
 
             // Cache player
             Players[obj.PlayerId] = player;

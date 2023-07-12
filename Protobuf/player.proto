@@ -4,6 +4,6 @@ package ULTRANET.Core.Protobuf;
 
 message Player {
   string name = 1;
-  int32 roomID = 2;
-  int32 playerID = 3;
+  string room = 2;
+  uint32 id = 3;
 }

@@ -24,12 +24,13 @@ namespace ULTRANET.Core.Protobuf {
     static PlayerReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgxwbGF5ZXIucHJvdG8SFlVMVFJBTkVULkNvcmUuUHJvdG9idWYiJgoGUGxh",
-            "eWVyEgwKBG5hbWUYASABKAkSDgoGcm9vbUlEGAIgASgFYgZwcm90bzM="));
+            "CgxwbGF5ZXIucHJvdG8SFlVMVFJBTkVULkNvcmUuUHJvdG9idWYiMAoGUGxh",
+            "eWVyEgwKBG5hbWUYASABKAkSDAoEcm9vbRgCIAEoCRIKCgJpZBgDIAEoDWIG",
+            "cHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::ULTRANET.Core.Protobuf.Player), global::ULTRANET.Core.Protobuf.Player.Parser, new[]{ "Name", "RoomID" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::ULTRANET.Core.Protobuf.Player), global::ULTRANET.Core.Protobuf.Player.Parser, new[]{ "Name", "Room", "Id" }, null, null, null, null)
           }));
     }
     #endregion
@@ -71,7 +72,8 @@ namespace ULTRANET.Core.Protobuf {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Player(Player other) : this() {
       name_ = other.name_;
-      roomID_ = other.roomID_;
+      room_ = other.room_;
+      id_ = other.id_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -93,15 +95,27 @@ namespace ULTRANET.Core.Protobuf {
       }
     }
 
-    /// <summary>Field number for the "roomID" field.</summary>
-    public const int RoomIDFieldNumber = 2;
-    private int roomID_;
+    /// <summary>Field number for the "room" field.</summary>
+    public const int RoomFieldNumber = 2;
+    private string room_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int RoomID {
-      get { return roomID_; }
+    public string Room {
+      get { return room_; }
       set {
-        roomID_ = value;
+        room_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "id" field.</summary>
+    public const int IdFieldNumber = 3;
+    private uint id_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint Id {
+      get { return id_; }
+      set {
+        id_ = value;
       }
     }
 
@@ -121,7 +135,8 @@ namespace ULTRANET.Core.Protobuf {
         return true;
       }
       if (Name != other.Name) return false;
-      if (RoomID != other.RoomID) return false;
+      if (Room != other.Room) return false;
+      if (Id != other.Id) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -130,7 +145,8 @@ namespace ULTRANET.Core.Protobuf {
     public override int GetHashCode() {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
-      if (RoomID != 0) hash ^= RoomID.GetHashCode();
+      if (Room.Length != 0) hash ^= Room.GetHashCode();
+      if (Id != 0) hash ^= Id.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -153,9 +169,13 @@ namespace ULTRANET.Core.Protobuf {
         output.WriteRawTag(10);
         output.WriteString(Name);
       }
-      if (RoomID != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(RoomID);
+      if (Room.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Room);
+      }
+      if (Id != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(Id);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -171,9 +191,13 @@ namespace ULTRANET.Core.Protobuf {
         output.WriteRawTag(10);
         output.WriteString(Name);
       }
-      if (RoomID != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(RoomID);
+      if (Room.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Room);
+      }
+      if (Id != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(Id);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -188,8 +212,11 @@ namespace ULTRANET.Core.Protobuf {
       if (Name.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
-      if (RoomID != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(RoomID);
+      if (Room.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Room);
+      }
+      if (Id != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Id);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -206,8 +233,11 @@ namespace ULTRANET.Core.Protobuf {
       if (other.Name.Length != 0) {
         Name = other.Name;
       }
-      if (other.RoomID != 0) {
-        RoomID = other.RoomID;
+      if (other.Room.Length != 0) {
+        Room = other.Room;
+      }
+      if (other.Id != 0) {
+        Id = other.Id;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -228,8 +258,12 @@ namespace ULTRANET.Core.Protobuf {
             Name = input.ReadString();
             break;
           }
-          case 16: {
-            RoomID = input.ReadInt32();
+          case 18: {
+            Room = input.ReadString();
+            break;
+          }
+          case 24: {
+            Id = input.ReadUInt32();
             break;
           }
         }
@@ -251,8 +285,12 @@ namespace ULTRANET.Core.Protobuf {
             Name = input.ReadString();
             break;
           }
-          case 16: {
-            RoomID = input.ReadInt32();
+          case 18: {
+            Room = input.ReadString();
+            break;
+          }
+          case 24: {
+            Id = input.ReadUInt32();
             break;
           }
         }

@@ -49,6 +49,12 @@ namespace ULTRANET.Client
             textFieldStyle.fixedHeight = 25;
             textFieldStyle.fontSize = 14;
 
+            if (Connected)
+            {
+                ConnectedUI();
+                return;
+            }
+
             if (UMM.UKAPI.GetUKLevelType(SceneHelper.CurrentScene) != UKAPI.UKLevelType.MainMenu)
             {
                 // The user isn't in the menu so we don't need to show the UI
@@ -84,11 +90,53 @@ namespace ULTRANET.Client
 
             if (GUILayout.Button("Connect", buttonStyle))
             {
-                Thread connectionThread = new Thread(() => NetworkHandler.TryConnect(ip, (ushort)port, username));
-                connectionThread.Start();
+                OnConnectPress();
             }
 
             GUILayout.EndArea();
+        }
+
+        void ConnectedUI()
+        {
+            GUIStyle boxStyle = GUI.skin.box;
+            GUIStyle labelStyle = GUI.skin.label;
+            GUIStyle textFieldStyle = new GUIStyle(GUI.skin.textField);
+            GUIStyle buttonStyle = GUI.skin.button;
+
+            textFieldStyle.fixedHeight = 25;
+            textFieldStyle.fontSize = 14;
+
+            GUILayout.BeginArea(new Rect(10, 10, 350, 180), boxStyle);
+            GUILayout.Label("ULTRANET", labelStyle);
+
+            GUILayout.Space(10);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Connected as:", labelStyle);
+            GUILayout.Label(username, textFieldStyle);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(5);
+
+            if (GUILayout.Button("Disconnect", buttonStyle))
+            {
+                OnDisconnectPress();
+            }
+
+            GUILayout.EndArea();
+        }
+
+        private void OnDisconnectPress()
+        {
+            NetworkHandler.TryDisconnect(ClientHandler.Channel);
+        }
+
+        private void OnConnectPress()
+        {
+            ClientHandler.Logger = _logger;
+
+            new Thread(() => NetworkHandler.TryConnect(ip, (ushort)port, username)).Start();
+            HudMessageReceiver.Instance.SendHudMessage($"Attempting connection to {ip}:{port}...");
         }
 
         private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)

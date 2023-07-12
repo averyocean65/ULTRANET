@@ -1,0 +1,12 @@
+﻿syntax = "proto3";
+
+package ULTRANET.Core.Protobuf;
+
+message DynamicPacket {
+  string key = 1;
+  
+  uint32 player_id = 2;
+  uint32 flags = 3;
+
+  bytes value = 4;
+}

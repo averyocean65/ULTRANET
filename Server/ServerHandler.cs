@@ -1,5 +1,9 @@
-﻿using System;
+﻿// #define LOG_TRANSFORM_UPDATES
+
+using System;
 using System.Collections.Concurrent;
+using System.Globalization;
+using System.Linq;
 using System.Text;
 using DotNetty.Transport.Channels;
 using Google.Protobuf;
@@ -19,6 +23,17 @@ namespace ULTRANET.Server
 
         private static int NextPlayerId { get; set; } = 0;
 
+        private void SendPacketToAllExcept(DynamicPacket packet, IChannelId id)
+        {
+            foreach (var channel in Channels)
+            {
+                if (Equals(channel.Key, id))
+                    continue;
+
+                PacketHandler.SendPacket(channel.Value, packet.ToByteArray());
+            }
+        }
+
         private void SendPacketToAll(DynamicPacket packet)
         {
             foreach (var channel in Channels)
@@ -31,15 +46,57 @@ namespace ULTRANET.Server
         {
             _channel = ctx.Channel;
 
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            DynamicPacket packet = DynamicPacket.Parser.ParseFrom(data);
+            try
+            {
+                byte[] data = Encoding.UTF8.GetBytes(message);
+                DynamicPacket packet = DynamicPacket.Parser.ParseFrom(data);
 
-            PacketFlag flags = PacketFlagConverter.FromUInt32(packet.Flags);
+                PacketFlag flags = PacketFlagConverter.FromUInt32(packet.Flags);
 
-            PacketHandler.PacketEvent(packet, ProtocolHeaders.CONNECT, OnPlayerConnect);
-            PacketHandler.PacketEvent(packet, ProtocolHeaders.MESSAGE, OnPlayerMessage);
-            PacketHandler.PacketEvent(packet, ProtocolHeaders.GET_PLAYER, OnGetPlayer);
-            PacketHandler.PacketEvent(packet, ProtocolHeaders.CHANGE_ROOM, OnPlayerRoomChange);
+                PacketHandler.PacketEvent(packet, ProtocolHeaders.CONNECT, OnPlayerConnect);
+                PacketHandler.PacketEvent(packet, ProtocolHeaders.MESSAGE, OnPlayerMessage);
+                PacketHandler.PacketEvent(packet, ProtocolHeaders.GET_PLAYER, OnGetPlayer);
+                PacketHandler.PacketEvent(packet, ProtocolHeaders.CHANGE_ROOM, OnPlayerRoomChange);
+                PacketHandler.PacketEvent(packet, ProtocolHeaders.PLAYER_TRANSFORM_UPDATE, OnPlayerTransformUpdate);
+            }
+            catch (Exception ex)
+            {
+                // Ignore. This is usually caused by a malformed packet.
+                Console.Error.WriteLine($"EXCEPTION: {ex.Message}");
+            }
+        }
+
+        private void OnPlayerTransformUpdate(DynamicPacket packet, PacketFlag flags)
+        {
+            // Deserialize the value field into a Transform message
+            string[] valueStrings = packet.Value.ToStringUtf8().Split(';');
+
+            // Parse Doubles with InvariantCulture
+            double[] values = valueStrings.Select(x => double.Parse(x, CultureInfo.InvariantCulture)).ToArray();
+
+            Transform transform = new Transform()
+            {
+                PosX = values[0], PosY = values[1], PosZ = values[2],
+                RotX = values[3], RotY = values[4], RotZ = values[5],
+                SclX = values[6], SclY = values[7], SclZ = values[8]
+            };
+
+            // Access the transform data
+            var transformData = TransformUtils.FromTransform(transform);
+
+            // Handle the transform update
+            // TODO: Implement your logic here
+            // You can access individual values like transformData[0] for Position.x, transformData[1] for Position.y, etc.
+
+            // For example, print the transform data
+            Player player = Players[packet.PlayerId];
+
+#if LOG_TRANSFORM_UPDATES
+            Console.WriteLine($"Received transform update from {player.Name}:");
+            Console.WriteLine("Position:\t({0}, {1}, {2})", transform.PosX, transform.PosY, transform.PosZ);
+            Console.WriteLine("Rotation:\t({0}, {1}, {2})", transform.RotX, transform.RotY, transform.RotZ);
+            Console.WriteLine("Scale:\t\t({0}, {1}, {2})", transform.SclX, transform.SclY, transform.SclZ);
+#endif
         }
 
         private void OnPlayerRoomChange(DynamicPacket arg1, PacketFlag arg2)
@@ -82,12 +139,13 @@ namespace ULTRANET.Server
             // Get player from Packet Data
             Player player = Player.Parser.ParseFrom(obj.Value.ToByteArray());
             player.Id = (uint)NextPlayerId;
+            int nextID = NextPlayerId;
 
             // Increment player id
             NextPlayerId++;
 
             // Cache player
-            Players[obj.PlayerId] = player;
+            Players.TryAdd((uint)nextID, player);
             Console.WriteLine("Player connected: " + player.Name);
 
             // Generate packet

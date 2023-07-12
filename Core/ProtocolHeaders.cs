@@ -13,6 +13,7 @@
         public const string CHANGE_ROOM = "ROOMCHANGE";
 
         public const string SET_LOCAL_PLAYER = "LOCALPLAYER";
+        public const string PLAYER_TRANSFORM_UPDATE = "PTRANSUP";
 
         public const string MESSAGE = "MESSAGE";
         public const string ERROR = "ERROR";

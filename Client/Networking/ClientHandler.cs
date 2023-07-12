@@ -23,6 +23,7 @@ namespace ULTRANET.Client.Networking
         protected override void ChannelRead0(IChannelHandlerContext ctx, string msg)
         {
             Channel = ctx.Channel;
+
             // Parse to DynPacket
             byte[] data = Encoding.UTF8.GetBytes(msg);
             DynamicPacket packet = DynamicPacket.Parser.ParseFrom(data);
@@ -35,6 +36,28 @@ namespace ULTRANET.Client.Networking
             PacketHandler.PacketEvent(packet, ProtocolHeaders.MESSAGE, MessageHandler);
             PacketHandler.PacketEvent(packet, ProtocolHeaders.GET_PLAYER, PlayerHandler);
             PacketHandler.PacketEvent(packet, ProtocolHeaders.CHANGE_ROOM, ChangeRoomHandler);
+            PacketHandler.PacketEvent(packet, ProtocolHeaders.PLAYER_TRANSFORM_UPDATE, PlayerTransformUpdateHandler);
+        }
+
+        public override void ChannelActive(IChannelHandlerContext context)
+        {
+            base.ChannelActive(context);
+            Channel = context.Channel;
+        }
+
+        private void PlayerTransformUpdateHandler(DynamicPacket arg1, PacketFlag arg2)
+        {
+            Player player = GetPlayer(arg1.PlayerId);
+            if (player == null)
+                return;
+
+            // Get Transform from data
+            byte[] byteData = arg1.Value.ToByteArray();
+            Transform transformData = Transform.Parser.ParseFrom(byteData);
+
+            // Get Vectors
+            var transform = TransformUtils.FromTransform(transformData);
+            Logger.LogInfo($"Player Transform: {transform.pos}");
         }
 
         private void ChangeRoomHandler(DynamicPacket arg1, PacketFlag arg2)

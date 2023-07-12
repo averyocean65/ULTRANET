@@ -2,8 +2,31 @@ syntax = "proto3";
 
 package ULTRANET.Core.Protobuf;
 
+message Transform {
+  double posX = 1;
+  double posY = 2;
+  double posZ = 3;
+  
+  double rotX = 4;
+  double rotY = 5;
+  double rotZ = 6;
+  
+  double sclX = 7;
+  double sclY = 8;
+  double sclZ = 9;
+}
+
 message Player {
   string name = 1;
   string room = 2;
   uint32 id = 3;
+
+  /* Data Layout:
+  transform = [
+    Position.x, Position.y, Position.z,
+    Rotation.x, Rotation.y, Rotation.z,
+    Scale   .x, Scale   .y, Scale   .z
+  ]
+  */
+  Transform transform = 4;
 }

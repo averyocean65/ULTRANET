@@ -7,6 +7,7 @@ using ULTRANET.Core.Protobuf;
 using UMM;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Transform = ULTRANET.Core.Protobuf.Transform;
 
 namespace ULTRANET.Client
 {
@@ -24,6 +25,12 @@ namespace ULTRANET.Client
         public int port;
         public string username;
 
+        private UnityEngine.Vector3 _lastPosition;
+        private Quaternion _lastRotation;
+        private float _lastTime;
+
+        private NewMovement _newMovement;
+
         private void Awake()
         {
             // Create logger
@@ -37,6 +44,41 @@ namespace ULTRANET.Client
             SceneManager.sceneLoaded += OnSceneLoaded;
 
             name = pluginName;
+        }
+
+        private void Update()
+        {
+            if (!_newMovement || !Connected)
+                return;
+
+            UnityEngine.Vector3 position = _newMovement.transform.position;
+            Quaternion rotation = _newMovement.transform.rotation;
+            UnityEngine.Vector3 scale = _newMovement.transform.localScale;
+
+            if (position == _lastPosition &&
+                rotation == _lastRotation)
+                return;
+
+            // Send a network event
+            Player local = ClientHandler.LocalPlayer;
+
+            if (local == null)
+                return;
+
+            Transform transformMessage = TransformUtils.ToTransform(position, rotation.eulerAngles, scale);
+
+            // Stupid hack because Protobuf doesn't like me
+            string transformString = $"{transformMessage.PosX};{transformMessage.PosY};{transformMessage.PosZ};" +
+                                     $"{transformMessage.RotX};{transformMessage.RotY};{transformMessage.RotZ};" +
+                                     $"{transformMessage.SclX};{transformMessage.SclY};{transformMessage.SclZ}";
+
+            _logger.LogInfo(transformString);
+
+            // Send packet
+            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.PLAYER_TRANSFORM_UPDATE, local.Id,
+                PacketFlag.Player, transformString);
+
+            PacketHandler.SendPacket(ClientHandler.Channel, packet.ToByteArray());
         }
 
         private void OnGUI()
@@ -147,12 +189,15 @@ namespace ULTRANET.Client
             // Send Message
             _logger.LogInfo("Scene Loaded: " + sceneName);
 
+            // Get New Movement
+            _newMovement = FindObjectOfType<NewMovement>();
+
             if (!Connected)
                 return;
 
             // Send Packet
             Player local = ClientHandler.LocalPlayer;
-            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.CHANGE_ROOM, 0, PacketFlag.None,
+            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.CHANGE_ROOM, 0, PacketFlag.Player,
                 sceneName);
 
             byte[] connectProtocol = packet.ToByteArray();

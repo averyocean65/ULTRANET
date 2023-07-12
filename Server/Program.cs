@@ -8,22 +8,31 @@ namespace ULTRANET.Server
     {
         static async Task Main(string[] args)
         {
-            if (args.Length < 2)
-            {
-                Console.WriteLine("Usage: ULTRANET.Server <ip> <port>");
-                Console.WriteLine("Example: ULTRANET.Server 127.0.0.1 1234");
-                return;
-            }
+            IPAddress ip = null;
+            ushort port = 0;
 
             try
             {
+                if (args.Length < 2)
+                {
+                    Console.Write("Enter IP: ");
+                    ip = IPAddress.Parse(Console.ReadLine() ?? string.Empty);
+
+                    Console.Write("Enter Port: ");
+                    port = ushort.Parse(Console.ReadLine() ?? string.Empty);
+
+                    Console.Clear();
+                }
+
                 Console.WriteLine("ULTRANET Server");
 
-                IPAddress ip = IPAddress.Parse(args[0]);
-                ushort port = ushort.Parse(args[1]);
+                if (args.Length >= 2)
+                {
+                    ip = IPAddress.Parse(args[0]);
+                    port = ushort.Parse(args[1]);
+                }
 
-                await Server.Initialize(new IPEndPoint(ip, port));
-                Console.WriteLine("Server stopped");
+                if (ip != null) await Server.Initialize(new IPEndPoint(ip, port));
             }
             catch (Exception ex)
             {

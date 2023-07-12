@@ -2,24 +2,25 @@
 The Open-Source ULTRAKILL Multiplayer Mod
 
 ## What is ULTRANET?
-ULTRANET is a mod for the popular shooter [ULTRAKILL](https://store.steampowered.com/app/1229490/ULTRAKILL/) that allows multiple players to play the game together.
+ULTRANET is a mod for the first-person shooter [ULTRAKILL](https://store.steampowered.com/app/1229490/ULTRAKILL). This mod allows for multiple people to play ULTRAKILL together
 
 ## Required Tools
 - C#-compatible IDE (like [Visual Studio](https://visualstudio.microsoft.com) or [JetBrains Rider](https://www.jetbrains.com/rider/))
 - [.NET Framework 4.7.2](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net472)
 - [BepInEx 5.X.X](https://github.com/BepInEx/BepInEx/releases/tag)
 - [Ultra Mod Manager](https://github.com/Temperz87/ultra-mod-manager/releases)
+- [ULTRAKILL](https://store.steampowered.com/app/1229490/ULTRAKILL)
 
 ## Compilation & Setup
 In order to build ULTRANET follow these steps:
 
 ### First time setup:
-1. Add DLLs to `Libraries/ULTRAKILL` (read `Libraries/ULTRAKILL/Libraries.txt`)
+1. Add DLLs to `Libraries/ULTRAKILL` from `ULTRAKILL/ULTRAKILL_Data/Managed` (read `Libraries/ULTRAKILL/Libraries.txt`)
 2. Reference the DLLs from the `Libraries` folder
 
 ### Building
 1. Use the Build Feature in your IDE
-2. If the compilation fails, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://example.com)!
+2. If the compilation fails, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://discord.gg/rBvqHKhsB5)!
 
 ## ULTRAKILL
 In order to use ULTRANET in ULTRAKILL follow these steps:
@@ -33,7 +34,7 @@ In order to use ULTRANET in ULTRAKILL follow these steps:
 6. Load `ULTRANET.Client` into `BepInEx/UMM Mods/ULTRANET`
 7. Launch ULTRAKILL and enable the mod
 
-If you encounter any issues, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://example.com)!
+If you encounter any issues, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://discord.gg/rBvqHKhsB5)!
 
 ## Notices
 - [Library Notice](./Library%20Notice.md)

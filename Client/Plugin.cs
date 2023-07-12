@@ -1,15 +1,13 @@
-﻿using System;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading;
 using BepInEx.Logging;
-using DotNetty.Codecs;
-using DotNetty.Transport.Channels;
-using DotNetty.Transport.Channels.Sockets;
-using UnityEngine;
+using Google.Protobuf;
+using ULTRANET.Client.Networking;
 using ULTRANET.Core;
+using ULTRANET.Core.Protobuf;
 using UMM;
+using UnityEngine;
 using UnityEngine.SceneManagement;
+using Transform = ULTRANET.Core.Protobuf.Transform;
 
 namespace ULTRANET.Client
 {
@@ -20,19 +18,18 @@ namespace ULTRANET.Client
         public const string pluginName = "ULTRANET Client";
         public const string pluginVersion = "0.1.0";
 
+        public static bool Connected = false;
         private static ManualLogSource _logger;
-        private static string _ip;
-        private static int _port;
-        
-        public static IChannel Channel;
 
-        public static int PlayerID = 0;
-        public static bool IsConnected = false;
-        
-        private void Crash()
-        {
-            Environment.Exit(1);
-        }
+        public string ip;
+        public int port;
+        public string username;
+
+        private UnityEngine.Vector3 _lastPosition;
+        private Quaternion _lastRotation;
+        private float _lastTime;
+
+        private NewMovement _newMovement;
 
         private void Awake()
         {
@@ -41,155 +38,170 @@ namespace ULTRANET.Client
 
             // Disable Cybergrind Submission
             UMM.UKAPI.DisableCyberGrindSubmission("ULTRANET BLOCKED CYBERGRIND SUBMISSION");
-            _logger.LogInfo("ULTRANET Client Loaded.");
-            
-            if(!PersistentModDataExists("ip"))
-                SetPersistentModData("ip", "127.0.0.1", pluginName);
-            
-            if(!PersistentModDataExists("port"))
-                SetPersistentModData("port", "1234", pluginName);
-            
-            _ip = RetrieveStringPersistentModData("ip", pluginName);
-            _port = RetrieveIntPersistentModData("port");
-
             _logger.LogInfo("ULTRANET Client Initialized.");
-            
-            // On SceneChange
-            SceneManager.sceneLoaded += OnSceneChange;
+
+            // Scenes
+            SceneManager.sceneLoaded += OnSceneLoaded;
+
+            name = pluginName;
         }
 
-        private void OnSceneChange(Scene scene, LoadSceneMode loadMode)
+        private void Update()
         {
-            if (!IsConnected)
+            if (!_newMovement || !Connected)
                 return;
-            
-            VariablePacket send = new VariablePacket(NetworkKeys.ROOM_CHANGE, PlayerID, 
-                SceneHelper.CurrentScene);
-            
-            NetworkHelpers.SendPacket(Channel, send);
+
+            UnityEngine.Vector3 position = _newMovement.transform.position;
+            Quaternion rotation = _newMovement.transform.rotation;
+            UnityEngine.Vector3 scale = _newMovement.transform.localScale;
+
+            if (position == _lastPosition &&
+                rotation == _lastRotation)
+                return;
+
+            // Send a network event
+            Player local = ClientHandler.LocalPlayer;
+
+            if (local == null)
+                return;
+
+            Transform transformMessage = TransformUtils.ToTransform(position, rotation.eulerAngles, scale);
+
+            // Stupid hack because Protobuf doesn't like me
+            string transformString = $"{transformMessage.PosX};{transformMessage.PosY};{transformMessage.PosZ};" +
+                                     $"{transformMessage.RotX};{transformMessage.RotY};{transformMessage.RotZ};" +
+                                     $"{transformMessage.SclX};{transformMessage.SclY};{transformMessage.SclZ}";
+
+            _logger.LogInfo(transformString);
+
+            // Send packet
+            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.PLAYER_TRANSFORM_UPDATE, local.Id,
+                PacketFlag.Player, transformString);
+
+            PacketHandler.SendPacket(ClientHandler.Channel, packet.ToByteArray());
         }
 
         private void OnGUI()
         {
-            // UI
-            GUI.Box(new Rect(10, 10, 220, 150), "ULTRANET");
+            GUIStyle boxStyle = GUI.skin.box;
+            GUIStyle labelStyle = GUI.skin.label;
+            GUIStyle textFieldStyle = new GUIStyle(GUI.skin.textField);
+            GUIStyle buttonStyle = GUI.skin.button;
 
-            if (UMM.UKAPI.InLevel() && !IsConnected)
+            textFieldStyle.fixedHeight = 25;
+            textFieldStyle.fontSize = 14;
+
+            if (Connected)
             {
-                // Show error
-                GUI.Label(new Rect(20, 40, 100, 20), "Please connect to a ULTRANET server in the Main Menu.");
+                ConnectedUI();
                 return;
             }
 
-            if (!IsConnected)
+            if (UMM.UKAPI.GetUKLevelType(SceneHelper.CurrentScene) != UKAPI.UKLevelType.MainMenu)
             {
-                GUI.Label(new Rect(20, 40, 100, 20), "IP:");
-                _ip = GUI.TextField(new Rect(60, 40, 160, 20), _ip);
-
-                GUI.Label(new Rect(20, 60, 100, 20), "Port:");
-                _port = int.Parse(GUI.TextField(new Rect(60, 60, 160, 20), _port.ToString()));
-            }
-
-            if (PlayerID != 0)
-            {
-                GUI.Label(new Rect(20, 120, 100, 20), $"Player ID: {PlayerID}");
+                // The user isn't in the menu so we don't need to show the UI
                 return;
             }
-            
-            if (GUI.Button(new Rect(20, 90, 100, 30), "Connect"))
+
+            // If the user isn't connected to a server and in the home menu, show the connection UI
+            GUILayout.BeginArea(new Rect(10, 10, 350, 180), boxStyle);
+            GUILayout.Label("ULTRANET", labelStyle);
+
+            GUILayout.Space(10);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("IP:", labelStyle);
+            ip = GUILayout.TextField(ip, textFieldStyle);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(5);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Port:", labelStyle);
+            port = int.Parse(GUILayout.TextField(port.ToString(), textFieldStyle));
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(5);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Name:", labelStyle);
+            username = GUILayout.TextField(username, textFieldStyle);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(10);
+
+            if (GUILayout.Button("Connect", buttonStyle))
             {
-                Thread connectionThread = new Thread(ConnectionLoop);
-                connectionThread.Start();
+                OnConnectPress();
             }
+
+            GUILayout.EndArea();
         }
 
-        private void ConnectionLoop()
+        void ConnectedUI()
         {
-            HudMessageReceiver.Instance.SendHudMessage($"Attempting to connect to ULTRANET Server at {_ip}:{_port}...");
-            var group = new MultithreadEventLoopGroup();
+            GUIStyle boxStyle = GUI.skin.box;
+            GUIStyle labelStyle = GUI.skin.label;
+            GUIStyle textFieldStyle = new GUIStyle(GUI.skin.textField);
+            GUIStyle buttonStyle = GUI.skin.button;
 
-            try
+            textFieldStyle.fixedHeight = 25;
+            textFieldStyle.fontSize = 14;
+
+            GUILayout.BeginArea(new Rect(10, 10, 350, 180), boxStyle);
+            GUILayout.Label("ULTRANET", labelStyle);
+
+            GUILayout.Space(10);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Connected as:", labelStyle);
+            GUILayout.Label(username, textFieldStyle);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(5);
+
+            if (GUILayout.Button("Disconnect", buttonStyle))
             {
-                var bootstrap = new DotNetty.Transport.Bootstrapping.Bootstrap();
-                bootstrap
-                    .Group(group)
-                    .Channel<TcpSocketChannel>()
-                    .Handler(new ActionChannelInitializer<ISocketChannel>(channel =>
-                    {
-                        IChannelPipeline pipeline = channel.Pipeline;
-                        pipeline.AddLast(new StringEncoder(), new StringDecoder(), new ClientHandler());
-                    }));
-
-                IChannel clientChannel = bootstrap.ConnectAsync(_ip, _port).Result;
-                string connectProtocol = new VariablePacket(NetworkKeys.Client.CONNECT, 0, "");
-                NetworkHelpers.SendPacket(clientChannel, connectProtocol);
-                
-                // Wait 5 seconds for connection
-                Thread.Sleep(5000);
-
-                if (PlayerID == 0)
-                {
-                    HudMessageReceiver.Instance.SendHudMessage(
-                        $"Failed to connect to ULTRANET Server at {_ip}:{_port}.");
-                    clientChannel.CloseAsync();
-                }
-
-                while (IsConnected) {}
+                OnDisconnectPress();
             }
-            finally
-            {
-                group.ShutdownGracefullyAsync();
-            }
+
+            GUILayout.EndArea();
         }
 
-        private void OnApplicationQuit()
+        private void OnDisconnectPress()
         {
-            if (Channel != null)
-            {
-                VariablePacket send = new VariablePacket(NetworkKeys.Client.DISCONNECT, PlayerID, "");
-                NetworkHelpers.SendPacket(Channel, send);
-                Channel.CloseAsync();
-            }
+            NetworkHandler.TryDisconnect(ClientHandler.Channel);
         }
-    }
 
-    internal class ClientHandler : SimpleChannelInboundHandler<string>
-    {
-        protected override void ChannelRead0(IChannelHandlerContext ctx, string msg)
+        private void OnConnectPress()
         {
-            Plugin.Channel = ctx.Channel;
-            
-            // TODO: Use Switch Statement
-            Console.WriteLine($"Received from server: {msg}");
-            VariablePacket packet = msg;
-            
-            if (packet.key == NetworkKeys.ERROR)
-            {
-                HudMessageReceiver.Instance.SendHudMessage($"ERROR: <color=red>{packet.data}</color>");
-                return;
-            }
-            
-            if (packet.key == NetworkKeys.PLAYER_ID)
-            {
-                Plugin.PlayerID = packet.entity;
-                Console.WriteLine($"PLAYER ID: {packet.entity}");
-                
-                HudMessageReceiver.Instance.SendHudMessage($"Connected to ULTRANET Server!\nPlayer ID: {packet.entity}");
-                Plugin.IsConnected = true;
-                return;
-            }
+            ClientHandler.Logger = _logger;
 
-            if (packet.key == NetworkKeys.ROOM_CHANGE)
-            {
-                HudMessageReceiver.Instance.SendHudMessage($"{packet.entity} joined \"{packet.data}\"");
+            new Thread(() => NetworkHandler.TryConnect(ip, (ushort)port, username)).Start();
+            HudMessageReceiver.Instance.SendHudMessage($"Attempting connection to {ip}:{port}...");
+        }
+
+        private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
+        {
+            // Get scene name
+            string sceneName = SceneHelper.CurrentScene;
+
+            // Send Message
+            _logger.LogInfo("Scene Loaded: " + sceneName);
+
+            // Get New Movement
+            _newMovement = FindObjectOfType<NewMovement>();
+
+            if (!Connected)
                 return;
-            }
-            
-            if(packet.key == NetworkKeys.MESSAGE)
-            {
-                HudMessageReceiver.Instance.SendHudMessage(packet.data);
-                return;
-            }
+
+            // Send Packet
+            Player local = ClientHandler.LocalPlayer;
+            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.CHANGE_ROOM, 0, PacketFlag.Player,
+                sceneName);
+
+            byte[] connectProtocol = packet.ToByteArray();
+            PacketHandler.SendPacket(ClientHandler.Channel, connectProtocol);
         }
     }
 }

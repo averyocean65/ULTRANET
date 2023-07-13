@@ -72,8 +72,6 @@ namespace ULTRANET.Client
                                      $"{transformMessage.RotX};{transformMessage.RotY};{transformMessage.RotZ};" +
                                      $"{transformMessage.SclX};{transformMessage.SclY};{transformMessage.SclZ}";
 
-            _logger.LogInfo(transformString);
-
             // Send packet
             DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.PLAYER_TRANSFORM_UPDATE, local.Id,
                 PacketFlag.Player, transformString);
@@ -195,9 +193,13 @@ namespace ULTRANET.Client
             if (!Connected)
                 return;
 
+            // Remove all players in room
+            ClientHandler.PlayersInRoom.Clear();
+
             // Send Packet
             Player local = ClientHandler.LocalPlayer;
-            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.CHANGE_ROOM, 0, PacketFlag.Player,
+            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.CHANGE_ROOM, local.Id,
+                PacketFlag.Player,
                 sceneName);
 
             byte[] connectProtocol = packet.ToByteArray();

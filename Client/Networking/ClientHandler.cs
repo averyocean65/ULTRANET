@@ -1,9 +1,11 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Text;
 using System.Threading;
 using BepInEx.Logging;
 using DotNetty.Transport.Channels;
 using Google.Protobuf;
+using Newtonsoft.Json;
 using ULTRANET.Core;
 using ULTRANET.Core.Protobuf;
 
@@ -11,7 +13,10 @@ namespace ULTRANET.Client.Networking
 {
     public class ClientHandler : SimpleChannelInboundHandler<string>
     {
-        private static readonly ConcurrentDictionary<uint, Player> _players = new ConcurrentDictionary<uint, Player>();
+        public static readonly ConcurrentDictionary<uint, Player> PlayersInRoom =
+            new ConcurrentDictionary<uint, Player>();
+
+        public static readonly ConcurrentDictionary<uint, Player> Players = new ConcurrentDictionary<uint, Player>();
         public static IChannel Channel;
 
         public static ManualLogSource Logger;
@@ -37,6 +42,32 @@ namespace ULTRANET.Client.Networking
             PacketHandler.PacketEvent(packet, ProtocolHeaders.GET_PLAYER, PlayerHandler);
             PacketHandler.PacketEvent(packet, ProtocolHeaders.CHANGE_ROOM, ChangeRoomHandler);
             PacketHandler.PacketEvent(packet, ProtocolHeaders.PLAYER_TRANSFORM_UPDATE, PlayerTransformUpdateHandler);
+            PacketHandler.PacketEvent(packet, ProtocolHeaders.GET_IN_ROOM, GetPlayersInRoomHandler);
+        }
+
+        private void GetPlayersInRoomHandler(DynamicPacket packet, PacketFlag flags)
+        {
+            PlayersInRoom.Clear();
+            string[] playerStrings = packet.Value.ToStringUtf8().Split(';');
+
+            foreach (var playerString in playerStrings)
+            {
+                // Get player data
+                Logger.LogInfo("PlayerString: " + playerString);
+                Player player = JsonConvert.DeserializeObject<Player>(playerString);
+
+                // Cache player
+                if (player.Id == LocalPlayer.Id)
+                    continue;
+
+                PlayersInRoom.TryAdd(player.Id, player);
+                Players.TryAdd(player.Id, player);
+            }
+
+            HudMessageReceiver.Instance.SendHudMessage(
+                newmessage: $"Players in room: {PlayersInRoom.Count}",
+                silent: false
+            );
         }
 
         public override void ChannelActive(IChannelHandlerContext context)
@@ -68,10 +99,21 @@ namespace ULTRANET.Client.Networking
 
             player.Room = arg1.Value.ToStringUtf8();
 
-            HudMessageReceiver.Instance.SendHudMessage(
-                newmessage: $"Player <color=yellow>{player.Name}</color> switched to {arg1.Value.ToStringUtf8()}",
-                silent: false
-            );
+            // HudMessageReceiver.Instance.SendHudMessage(
+            //     newmessage: $"Player <color=yellow>{player.Name}</color> switched to {arg1.Value.ToStringUtf8()}",
+            //     silent: false
+            // );
+
+            // Get players in Room
+            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.GET_IN_ROOM, 0, PacketFlag.None,
+                SceneHelper.CurrentScene);
+            PacketHandler.SendPacket(Channel, packet.ToByteArray());
+        }
+
+        public override void ExceptionCaught(IChannelHandlerContext context, Exception exception)
+        {
+            base.ExceptionCaught(context, exception);
+            Logger.LogError(exception);
         }
 
         private void SetLocalPlayerHandler(DynamicPacket obj, PacketFlag flags)
@@ -80,11 +122,10 @@ namespace ULTRANET.Client.Networking
             Player player = Player.Parser.ParseFrom(obj.Value.ToByteArray());
 
             // Cache player
-            _players[player.Id] = player;
+            Players[player.Id] = player;
 
             // Set local player
-            LocalPlayer = player;
-
+            LocalPlayer = Players[player.Id];
             Logger.LogInfo($"Local Player set to {LocalPlayer.Name} ({LocalPlayer.Id})");
         }
 
@@ -94,7 +135,7 @@ namespace ULTRANET.Client.Networking
             Player player = Player.Parser.ParseFrom(obj.Value.ToByteArray());
 
             // Cache player
-            _players[obj.PlayerId] = player;
+            Players[obj.PlayerId] = player;
         }
 
         private void MessageHandler(DynamicPacket obj, PacketFlag flags)
@@ -118,7 +159,7 @@ namespace ULTRANET.Client.Networking
         private Player GetPlayer(uint playerId)
         {
             // Get cached player
-            Player player = _players[playerId];
+            Player player = Players[playerId];
 
             if (player == null)
             {
@@ -133,7 +174,7 @@ namespace ULTRANET.Client.Networking
                 int i = 0;
                 while (player == null && i < iterMax)
                 {
-                    player = _players[playerId];
+                    player = Players[playerId];
                     Thread.Sleep(10);
 
                     i++;

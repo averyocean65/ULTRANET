@@ -58,12 +58,47 @@ namespace ULTRANET.Server
                 PacketHandler.PacketEvent(packet, ProtocolHeaders.GET_PLAYER, OnGetPlayer);
                 PacketHandler.PacketEvent(packet, ProtocolHeaders.CHANGE_ROOM, OnPlayerRoomChange);
                 PacketHandler.PacketEvent(packet, ProtocolHeaders.PLAYER_TRANSFORM_UPDATE, OnPlayerTransformUpdate);
+                PacketHandler.PacketEvent(packet, ProtocolHeaders.GET_IN_ROOM, OnGetPlayersInRoom);
             }
             catch (Exception ex)
             {
                 // Ignore. This is usually caused by a malformed packet.
                 Console.Error.WriteLine($"EXCEPTION: {ex.Message}");
             }
+        }
+
+        private void OnGetPlayersInRoom(DynamicPacket arg1, PacketFlag arg2)
+        {
+            string Serialize(Player p)
+            {
+                return Newtonsoft.Json.JsonConvert.SerializeObject(p);
+            }
+
+            // Get Room ID
+            string room = arg1.Value.ToStringUtf8();
+
+            Console.WriteLine($"Getting Players in Room: {room}");
+
+            // Get Players in Room
+            var players = Players
+                .Where(x => x.Value.Room == room)
+                .Select(x => x.Value)
+                .ToArray();
+
+            // Serialize Players
+            string[] playerStrings = players
+                .Select(Serialize)
+                .ToArray();
+
+            Console.WriteLine($"Player Data: {playerStrings[0]}");
+
+            Console.WriteLine($"Players in {room}: {playerStrings.Length}");
+
+            // Send Packet
+            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.GET_IN_ROOM, 0, PacketFlag.Player,
+                string.Join(";", playerStrings));
+
+            PacketHandler.SendPacket(_channel, packet.ToByteArray());
         }
 
         private void OnPlayerTransformUpdate(DynamicPacket packet, PacketFlag flags)
@@ -84,19 +119,16 @@ namespace ULTRANET.Server
             // Access the transform data
             var transformData = TransformUtils.FromTransform(transform);
 
-            // Handle the transform update
-            // TODO: Implement your logic here
-            // You can access individual values like transformData[0] for Position.x, transformData[1] for Position.y, etc.
-
-            // For example, print the transform data
+#if LOG_TRANSFORM_UPDATES
             Player player = Players[packet.PlayerId];
 
-#if LOG_TRANSFORM_UPDATES
             Console.WriteLine($"Received transform update from {player.Name}:");
             Console.WriteLine("Position:\t({0}, {1}, {2})", transform.PosX, transform.PosY, transform.PosZ);
             Console.WriteLine("Rotation:\t({0}, {1}, {2})", transform.RotX, transform.RotY, transform.RotZ);
             Console.WriteLine("Scale:\t\t({0}, {1}, {2})", transform.SclX, transform.SclY, transform.SclZ);
 #endif
+
+            SendPacketToAllExcept(packet, _channel.Id);
         }
 
         private void OnPlayerRoomChange(DynamicPacket arg1, PacketFlag arg2)
@@ -146,7 +178,7 @@ namespace ULTRANET.Server
 
             // Cache player
             Players.TryAdd((uint)nextID, player);
-            Console.WriteLine("Player connected: " + player.Name);
+            Console.WriteLine($"Player connected: {player.Name} ({player.Id} ; {NextPlayerId - 1})");
 
             // Generate packet
             DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.SET_LOCAL_PLAYER, obj.PlayerId,

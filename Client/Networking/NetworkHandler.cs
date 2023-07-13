@@ -36,6 +36,9 @@ namespace ULTRANET.Client.Networking
                 player.Room = "";
                 player.Id = 0;
 
+                // Wait 100ms for connection to be established
+                await Task.Delay(100);
+
                 DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.CONNECT, 0, PacketFlag.None,
                     player.ToByteString());
 

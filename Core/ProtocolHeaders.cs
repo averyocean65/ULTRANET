@@ -10,6 +10,8 @@
         public const string PING = "PING";
 
         public const string GET_PLAYER = "FETCHPLAYER";
+        public const string GET_IN_ROOM = "GETINROOM";
+
         public const string CHANGE_ROOM = "ROOMCHANGE";
 
         public const string SET_LOCAL_PLAYER = "LOCALPLAYER";

@@ -7,7 +7,7 @@ ULTRANET is a mod for the first-person shooter [ULTRAKILL](https://store.steampo
 ## Required Tools
 - C#-compatible IDE (like [Visual Studio](https://visualstudio.microsoft.com) or [JetBrains Rider](https://www.jetbrains.com/rider/))
 - [.NET Framework 4.7.2](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net472)
-- [BepInEx 5.X.X](https://github.com/BepInEx/BepInEx/releases/tag)
+- [BepInEx 5.X.X](https://github.com/BepInEx/BepInEx/releases)
 - [Ultra Mod Manager](https://github.com/Temperz87/ultra-mod-manager/releases)
 - [ULTRAKILL](https://store.steampowered.com/app/1229490/ULTRAKILL)
 

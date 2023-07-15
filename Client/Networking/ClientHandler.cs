@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using BepInEx.Logging;
@@ -57,15 +58,23 @@ namespace ULTRANET.Client.Networking
                 Player player = JsonConvert.DeserializeObject<Player>(playerString);
 
                 // Cache player
-                if (player.Id == LocalPlayer.Id)
-                    continue;
+                // if (player.Id == LocalPlayer.Id)
+                // continue;
 
                 PlayersInRoom.TryAdd(player.Id, player);
                 Players.TryAdd(player.Id, player);
             }
 
+            string output = string.Join(";", PlayersInRoom.Select(player =>
+            {
+                if (player.Value.Id != LocalPlayer.Id)
+                    return player.Value.Name;
+                return $"{player.Value.Name} (You)";
+            }));
+
+
             HudMessageReceiver.Instance.SendHudMessage(
-                newmessage: $"Players in room: {PlayersInRoom.Count}",
+                newmessage: $"Players in room: {PlayersInRoom.Count}\n{output}",
                 silent: false
             );
         }

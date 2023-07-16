@@ -12,10 +12,10 @@ ULTRANET is a mod for the first-person shooter [ULTRAKILL](https://store.steampo
 - [ULTRAKILL](https://store.steampowered.com/app/1229490/ULTRAKILL)
 
 ## FAQ
-Q: Is this meant to be a competitor to MULTIKILL?
+Q: Is this meant to be a competitor to MULTIKILL?<br>
 A: This mod is not meant to compete with MULTIKILL. It's just a fun project that I'm making and open-sourcing.
 
-Q: Is the mod playable?
+Q: Is the mod playable?<br>
 A: Not in the slightest, the mod is currently in early development though we'll try to get an Alpha out as soon as we think we're ready for it.
 
 ## Compilation & Setup

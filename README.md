@@ -11,15 +11,15 @@ ULTRANET is a mod for the first-person shooter [ULTRAKILL](https://store.steampo
 - [Ultra Mod Manager](https://github.com/Temperz87/ultra-mod-manager/releases)
 - [ULTRAKILL](https://store.steampowered.com/app/1229490/ULTRAKILL)
 
-## Compilation & Setup
-In order to build ULTRANET follow these steps:
-
 ## FAQ
 Q: Is this meant to be a competitor to MULTIKILL?
 A: This mod is not meant to compete with MULTIKILL. It's just a fun project that I'm making and open-sourcing.
 
 Q: Is the mod playable?
 A: Not in the slightest, the mod is currently in early development though we'll try to get an Alpha out as soon as we think we're ready for it.
+
+## Compilation & Setup
+In order to build ULTRANET follow these steps:
 
 ### First time setup:
 1. Add DLLs to `Libraries/ULTRAKILL` from `ULTRAKILL/ULTRAKILL_Data/Managed` (read `Libraries/ULTRAKILL/Libraries.txt`)

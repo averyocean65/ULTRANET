@@ -43,5 +43,9 @@ In order to use ULTRANET in ULTRAKILL follow these steps:
 
 If you encounter any issues, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://discord.gg/rBvqHKhsB5)!
 
+## Other ULTRAKILL multiplayer projects
+- MULTIKILL
+- [Join-and-kill-em-together](https://github.com/xzxADIxzx/Join-and-kill-em-together)
+
 ## Notices
 - [Library Notice](./Library%20Notice.md)

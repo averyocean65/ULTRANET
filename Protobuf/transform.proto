@@ -1,0 +1,28 @@
+﻿syntax="proto3";
+package ULTRANET.Core.Protobuf;
+
+message Vector3Data {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+/*
+ Transform? More like transfem
+ - rooot :3 (https://rooot.gay), 2023 (while I was writing this code)
+*/
+message TransformData {
+    Vector3Data position = 1;
+    Vector3Data rotation = 2;
+    Vector3Data scale = 3;
+}
+
+// TRANS RIGHTS!!!!
+message Transfem {
+    string meow = 1;
+}
+
+// TRANS RIGHTS!!!!
+message Transmasc {
+    string meow = 1;
+}

@@ -1,62 +1,89 @@
 ﻿using System;
-using DotNetty.Buffers;
-using DotNetty.Transport.Channels;
-using Google.Protobuf;
-using ULTRANET.Core.Protobuf;
+using LiteNetLib;
+using ULTRANET.Core.Networking;
 
 namespace ULTRANET.Core
 {
-    public class PacketHandler
+    public abstract class PacketHandler
     {
-        public static void SendPacket(IChannel channel, byte[] data)
-        {
-            IByteBuffer buffer = Unpooled.Buffer(data.Length);
-            buffer.WriteBytes(data);
+        protected EventBasedNetListener _listener;
+        protected NetManager _manager;
 
-            channel.WriteAndFlushAsync(buffer);
+        public PacketHandler(bool isClient, NetManager manager, EventBasedNetListener listener)
+        {
+            _manager = manager;
+            _listener = listener;
+
+            if (!isClient)
+                _listener.ConnectionRequestEvent += OnConnectRequest;
+
+            _listener.PeerConnectedEvent += OnConnect;
+            _listener.PeerDisconnectedEvent += OnDisconnect;
+            _listener.NetworkReceiveEvent += HandlePacket;
         }
 
-        public static void SendPacketToChannels(IChannel[] channels, byte[] data)
-        {
-            IByteBuffer buffer = Unpooled.Buffer(data.Length);
-            buffer.WriteBytes(data);
+        protected abstract void OnConnectPacket(NetPeer peer, ConnectionData data);
+        protected abstract void OnDisconnect(NetPeer peer, DisconnectionData data);
+        protected abstract void OnMiscPacket(NetPeer peer, Packet<object> objectPacket);
+        protected abstract void OnErrorPacket(NetPeer peer, string error);
 
-            foreach (IChannel channel in channels)
+        protected abstract void OnException(Exception exception);
+
+        public virtual void PollEvents()
+        {
+            _manager.PollEvents();
+        }
+
+        protected virtual void HandlePacket(NetPeer peer, NetPacketReader reader, byte channel,
+            DeliveryMethod deliveryMethod)
+        {
+            try
             {
-                channel.WriteAndFlushAsync(buffer);
+                Console.WriteLine("Received packet!");
+
+                Packet<object> objectPacket = Serializer.Deserialize<Packet<object>>(reader.GetRemainingBytes());
+                Console.WriteLine("Packet Type: " + objectPacket.Type);
+
+                switch (objectPacket.Type)
+                {
+                    case PacketType.Connect:
+                        ConnectionData data = (ConnectionData)objectPacket.Data;
+                        OnConnectPacket(peer, data);
+                        break;
+                    case PacketType.Disconnect:
+                        DisconnectionData disconnectionData = (DisconnectionData)objectPacket.Data;
+                        OnDisconnect(peer, disconnectionData);
+                        break;
+
+                    case PacketType.Error:
+                        string error = (string)objectPacket.Data;
+                        OnErrorPacket(peer, error);
+                        break;
+
+                    default:
+                        OnMiscPacket(peer, objectPacket);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                OnException(ex);
             }
         }
 
-        public static void PacketEvent(DynamicPacket packet, string key, Action<DynamicPacket, PacketFlag> action)
-        {
-            if (packet.Key == key)
-            {
-                // Get packet flags
-                PacketFlag flags = PacketFlagConverter.FromUInt32(packet.Flags);
 
-                action(packet, flags);
-            }
+        protected virtual void OnDisconnect(NetPeer peer, DisconnectInfo disconnectInfo)
+        {
         }
 
-        public static DynamicPacket GeneratePacket(string key, uint playerID, PacketFlag flags, string data)
+        // These functions are virtual and empty, because they might not have to be implemented in every packet handler.
+        // Example: OnConnectRequest doesn't have to be implemented by the client, only by the server.
+        protected virtual void OnConnectRequest(ConnectionRequest request)
         {
-            return GeneratePacket(key, playerID, flags, ByteString.CopyFromUtf8(data));
         }
 
-        public static DynamicPacket GeneratePacket(string key, uint playerID, PacketFlag flags, ByteString data)
+        protected virtual void OnConnect(NetPeer peer)
         {
-            DynamicPacket packet = new DynamicPacket();
-            packet.Key = key;
-            packet.PlayerId = playerID;
-            packet.Flags = PacketFlagConverter.ToUInt32(flags);
-            packet.Value = data;
-
-            return packet;
-        }
-
-        public static DynamicPacket ToPacket(byte[] data)
-        {
-            return DynamicPacket.Parser.ParseFrom(data);
         }
     }
 }

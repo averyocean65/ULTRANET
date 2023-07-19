@@ -1,0 +1,16 @@
+﻿syntax="proto3";
+package ULTRANET.Core.Protobuf;
+
+import "player.proto";
+import "room.proto";
+
+message Packet {
+  oneof packet {
+    PlayerConnectPacket player_connect_packet = 1;
+    PlayerDisconnectPacket player_disconnect_packet = 2;
+    PlayerSwitchRoomPacket player_switch_room_packet = 3;
+    GetPlayersInRoomPacket get_players_in_room_packet = 4;
+    PlayerMoveUpdatePacket player_move_update_packet = 5;
+    
+  }
+}

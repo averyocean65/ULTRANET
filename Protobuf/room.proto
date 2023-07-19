@@ -1,0 +1,9 @@
+﻿syntax="proto3";
+package ULTRANET.Core.Protobuf;
+
+import "player.proto";
+
+message GetPlayersInRoomPacket {
+    string room_id = 1;
+    repeated PlayerData players = 2;
+}

@@ -1,0 +1,2 @@
+﻿Geometry Dash Multiplayer Protobuf:
+https://github.com/Furries-UwU/GDMP-Proto/blob/e720d91f23deb58d856b6ae53a51b0a3fb86b85b/packet.proto

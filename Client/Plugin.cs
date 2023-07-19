@@ -1,13 +1,9 @@
 ﻿using System.Threading;
 using BepInEx.Logging;
-using Google.Protobuf;
-using ULTRANET.Client.Networking;
-using ULTRANET.Core;
-using ULTRANET.Core.Protobuf;
+using LiteNetLib;
 using UMM;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Transform = ULTRANET.Core.Protobuf.Transform;
 
 namespace ULTRANET.Client
 {
@@ -18,18 +14,25 @@ namespace ULTRANET.Client
         public const string pluginName = "ULTRANET Client";
         public const string pluginVersion = "0.1.0";
 
-        public static bool Connected = false;
         private static ManualLogSource _logger;
 
-        public string ip;
-        public int port;
-        public string username;
+        public static NetManager Client;
 
-        private UnityEngine.Vector3 _lastPosition;
-        private Quaternion _lastRotation;
-        private float _lastTime;
+        public static string IP;
+        public static int Port;
+        public static string Username;
 
         private NewMovement _newMovement;
+
+        public static bool Connected
+        {
+            get
+            {
+                if (Client != null)
+                    return Client.IsRunning;
+                return false;
+            }
+        }
 
         private void Awake()
         {
@@ -50,33 +53,6 @@ namespace ULTRANET.Client
         {
             if (!_newMovement || !Connected)
                 return;
-
-            UnityEngine.Vector3 position = _newMovement.transform.position;
-            Quaternion rotation = _newMovement.transform.rotation;
-            UnityEngine.Vector3 scale = _newMovement.transform.localScale;
-
-            if (position == _lastPosition &&
-                rotation == _lastRotation)
-                return;
-
-            // Send a network event
-            Player local = ClientHandler.LocalPlayer;
-
-            if (local == null)
-                return;
-
-            Transform transformMessage = TransformUtils.ToTransform(position, rotation.eulerAngles, scale);
-
-            // Stupid hack because Protobuf doesn't like me
-            string transformString = $"{transformMessage.PosX};{transformMessage.PosY};{transformMessage.PosZ};" +
-                                     $"{transformMessage.RotX};{transformMessage.RotY};{transformMessage.RotZ};" +
-                                     $"{transformMessage.SclX};{transformMessage.SclY};{transformMessage.SclZ}";
-
-            // Send packet
-            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.PLAYER_TRANSFORM_UPDATE, local.Id,
-                PacketFlag.Player, transformString);
-
-            PacketHandler.SendPacket(ClientHandler.Channel, packet.ToByteArray());
         }
 
         private void OnGUI()
@@ -109,21 +85,21 @@ namespace ULTRANET.Client
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("IP:", labelStyle);
-            ip = GUILayout.TextField(ip, textFieldStyle);
+            IP = GUILayout.TextField(IP, textFieldStyle);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(5);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Port:", labelStyle);
-            port = int.Parse(GUILayout.TextField(port.ToString(), textFieldStyle));
+            Port = int.Parse(GUILayout.TextField(Port.ToString(), textFieldStyle));
             GUILayout.EndHorizontal();
 
             GUILayout.Space(5);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Name:", labelStyle);
-            username = GUILayout.TextField(username, textFieldStyle);
+            Username = GUILayout.TextField(Username, textFieldStyle);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(10);
@@ -153,7 +129,7 @@ namespace ULTRANET.Client
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Connected as:", labelStyle);
-            GUILayout.Label(username, textFieldStyle);
+            GUILayout.Label(Username, textFieldStyle);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(5);
@@ -168,15 +144,18 @@ namespace ULTRANET.Client
 
         private void OnDisconnectPress()
         {
-            NetworkHandler.TryDisconnect(ClientHandler.Channel);
+            Client.Stop();
+            HudMessageReceiver.Instance.SendHudMessage("Disconnected from server.");
         }
 
         private void OnConnectPress()
         {
-            ClientHandler.Logger = _logger;
-
-            new Thread(() => NetworkHandler.TryConnect(ip, (ushort)port, username)).Start();
-            HudMessageReceiver.Instance.SendHudMessage($"Attempting connection to {ip}:{port}...");
+            new Thread(() =>
+            {
+                var tryConnect = Networking.Client.TryConnect(IP, (ushort)Port, Username);
+                tryConnect.Start();
+            }).Start();
+            HudMessageReceiver.Instance.SendHudMessage($"Attempting connection to {IP}:{Port}...");
         }
 
         private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
@@ -193,17 +172,7 @@ namespace ULTRANET.Client
             if (!Connected)
                 return;
 
-            // Remove all players in room
-            ClientHandler.PlayersInRoom.Clear();
-
-            // Send Packet
-            Player local = ClientHandler.LocalPlayer;
-            DynamicPacket packet = PacketHandler.GeneratePacket(ProtocolHeaders.CHANGE_ROOM, local.Id,
-                PacketFlag.Player,
-                sceneName);
-
-            byte[] connectProtocol = packet.ToByteArray();
-            PacketHandler.SendPacket(ClientHandler.Channel, connectProtocol);
+            // TODO: Get players in room
         }
     }
 }

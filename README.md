@@ -28,11 +28,10 @@ In order to use ULTRANET in ULTRAKILL follow these steps:
 ### Setup
 1. (Optional) Create a backup of your ULTRAKILL game files
 2. Load BepInEx 5.X.X into your ULTRAKILL directory
-3. Install `Ultra Mod Manager` (UMM.dll) into `ULTRAKILL/BepInEx/plugins/UMM`
-4. Launch ULTRAKILL to initialize UMM and BepInEx
-5. Load all DotNetty, Microsoft, ULTRANET.Core and System libraries into `BepInEx/plugins/ULTRANET`
-6. Load `ULTRANET.Client` into `BepInEx/UMM Mods/ULTRANET`
-7. Launch ULTRAKILL and enable the mod
+3. Launch ULTRAKILL to initialize BepInEx
+4. Load ULTRANET and Steamwork Libraries into `BepInEx/plugins/ULTRANET`
+5. Load `ULTRANET.Client` into `BepInEx/UMM Mods/ULTRANET`
+6. Launch ULTRAKILL and set up ULTRANET in Settings > PluginConfiguration > ULTRANET
 
 If you encounter any issues, [open an issue](https://github.com/averyocean65/ULTRANET/issues/new) or ask for help in our [Discord Server](https://discord.gg/rBvqHKhsB5)!
 

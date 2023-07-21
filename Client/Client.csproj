@@ -4,14 +4,13 @@
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <ProjectGuid>{5C7E022A-AD61-4C27-8630-5B61C4EFF543}</ProjectGuid>
+        <ProjectGuid>{34E5E4E6-F130-4E98-8DBF-755E0B4B798B}</ProjectGuid>
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>ULTRANET.Client</RootNamespace>
         <AssemblyName>ULTRANET.Client</AssemblyName>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
-        <LangVersion>8</LangVersion>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -42,20 +41,16 @@
         <Reference Include="BepInEx">
             <HintPath>..\Libraries\BepInEx.dll</HintPath>
         </Reference>
-        <Reference Include="LiteNetLib, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-            <HintPath>..\packages\LiteNetLib.1.1.0\lib\net471\LiteNetLib.dll</HintPath>
+        <Reference Include="Facepunch.Steamworks.Win64, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+            <HintPath>..\packages\Facepunch.Steamworks.2.3.3\lib\net46\Facepunch.Steamworks.Win64.dll</HintPath>
         </Reference>
-        <Reference Include="Microsoft.CSharp"/>
-        <Reference Include="mscorlib"/>
+        <Reference Include="PluginConfigurator">
+            <HintPath>..\Libraries\PluginConfigurator.dll</HintPath>
+        </Reference>
         <Reference Include="System"/>
-        <Reference Include="System.ComponentModel.DataAnnotations"/>
         <Reference Include="System.Core"/>
         <Reference Include="System.Data"/>
-        <Reference Include="System.Numerics"/>
         <Reference Include="System.Xml"/>
-        <Reference Include="UMM">
-            <HintPath>..\Libraries\UMM.dll</HintPath>
-        </Reference>
         <Reference Include="UnityEngine">
             <HintPath>..\Libraries\ULTRAKILL\UnityEngine.dll</HintPath>
         </Reference>
@@ -63,32 +58,29 @@
             <HintPath>..\Libraries\ULTRAKILL\UnityEngine.CoreModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.IMGUIModule">
-          <HintPath>..\Libraries\ULTRAKILL\UnityEngine.IMGUIModule.dll</HintPath>
+            <HintPath>..\Libraries\ULTRAKILL\UnityEngine.IMGUIModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.InputLegacyModule">
           <HintPath>..\Libraries\ULTRAKILL\UnityEngine.InputLegacyModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.InputModule">
-          <HintPath>..\Libraries\ULTRAKILL\UnityEngine.InputModule.dll</HintPath>
+            <HintPath>..\Libraries\ULTRAKILL\UnityEngine.InputModule.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Networking\ClientHandler.cs"/>
-        <Compile Include="Networking\Client.cs"/>
+        <Compile Include="ConfigUI.cs"/>
+        <Compile Include="NetworkManager.cs"/>
         <Compile Include="Plugin.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Core\Core.csproj">
-        <Project>{46b639cf-3a24-445a-ab14-b9072bf47085}</Project>
-        <Name>Core</Name>
-      </ProjectReference>
+        <None Include="App.config"/>
+        <None Include="packages.config"/>
     </ItemGroup>
     <ItemGroup>
-      <None Include="App.config" />
-      <None Include="packages.config" />
+        <Content Include="steam_api64.dll"/>
     </ItemGroup>
-    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
          Other similar extension points exist, see Microsoft.Common.targets.
     <Target Name="BeforeBuild">

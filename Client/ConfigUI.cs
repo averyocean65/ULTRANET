@@ -50,12 +50,15 @@ namespace ULTRANET
 
             // Host Settings - Map
             ConfigHeader mapHeader = new ConfigHeader(hostPanel, "Map");
-            StringField mapName = new StringField(hostPanel, "Map Name", "com.ultranet.host.map.name", "Level 1-1");
+            // StringField mapName = new StringField(hostPanel, "Map Name", "com.ultranet.host.map.name", "Level 1-1");
+            EnumField<Map> mapName = new EnumField<Map>(hostPanel, "Map Name", "com.ultranet.host.map.name",
+                Map.Prelude1);
 
             ButtonField hostButton = new ButtonField(hostPanel, "Host", "com.ultranet.host.button");
             hostButton.onClick += () =>
             {
-                NetworkManager.StartHost(maxPlayers.value, publicLobby.value, allowPvP.value, mapName.value);
+                NetworkManager.StartHost(maxPlayers.value, publicLobby.value, allowPvP.value,
+                    MapConverter.ToLevel(mapName.value));
             };
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Steamworks;
 using Steamworks.Data;
+using UnityEngine.SceneManagement;
 
 namespace ULTRANET
 {
@@ -13,12 +14,13 @@ namespace ULTRANET
 
     public class NetworkManager
     {
-        private static Lobby _currentLobby;
         private static List<SteamId> _currentLobbyMembers = new List<SteamId>();
+        public static Lobby CurrentLobby { get; private set; }
+        public static LobbyInfo CurrentLobbyInfo { get; private set; }
 
         public static bool IsHost
         {
-            get { return _currentLobby.Owner.Id == SteamClient.SteamId; }
+            get { return CurrentLobby.Owner.Id == SteamClient.SteamId; }
         }
 
         public static bool PreConnectChecks(string username)
@@ -68,23 +70,27 @@ namespace ULTRANET
             HudMessageReceiver.Instance.SendHudMessage(
                 "<color=yellow>Successfully created a lobby!</color>"
             );
+
+            CurrentLobby = lobby;
+            CurrentLobbyInfo = LobbyInfo.Create(lobby);
         }
 
         public static void OnLobbyEntered(Lobby lobby)
         {
-            if (IsHost)
-            {
-                Plugin.Logger.LogInfo("Joined lobby as host!");
-                return;
-            }
+            // if (IsHost)
+            // {
+            //     Plugin.Logger.LogInfo("Successfully join your own lobby lobby!");
+            //     return;
+            // }
+
+            LobbyInfo info = LobbyInfo.Create(lobby);
 
             // Compare version
-            string version = lobby.GetData("com.ultranet.lobby.version");
-            if (version != PluginInfo.VERSION)
+            if (info.Version != PluginInfo.VERSION)
             {
                 Plugin.Logger.LogError("Version mismatch!");
                 HudMessageReceiver.Instance.SendHudMessage(
-                    "<color=red>Version mismatch!</color>"
+                    "<color=red>Couldn't join lobby due to version mismatch!</color>"
                 );
 
                 lobby.Leave();
@@ -92,7 +98,11 @@ namespace ULTRANET
             }
 
             Plugin.Logger.LogInfo("Successfully joined the lobby!");
-            _currentLobby = lobby;
+            CurrentLobby = lobby;
+            CurrentLobbyInfo = info;
+
+            // Join Lobby Map
+            SceneHelper.LoadScene(CurrentLobbyInfo.Map);
         }
 
         public static void OnLobbyMemberJoined(Lobby arg1, Friend arg2)
@@ -128,12 +138,12 @@ namespace ULTRANET
             }
 
             Plugin.Logger.LogInfo("Successfully joined the lobby!");
-            _currentLobby = lobby;
+            CurrentLobby = lobby;
         }
 
         public static void OnP2PSessionRequest(SteamId arg1)
         {
-            if (_currentLobby.MemberCount >= _currentLobby.MaxMembers)
+            if (CurrentLobby.MemberCount >= CurrentLobby.MaxMembers)
                 return;
 
             _currentLobbyMembers.Add(arg1);
@@ -156,29 +166,40 @@ namespace ULTRANET
 
             Plugin.Logger.LogInfo("Creating Lobby...");
 
-            _currentLobby = lobby.Value;
-            _currentLobby.MaxMembers = maxPlayers;
-            _currentLobby.SetFriendsOnly();
-            _currentLobby.SetData("com.ultranet.lobby.version", PluginInfo.VERSION);
-            _currentLobby.SetData("com.ultranet.lobby.allowPvP", allowPvP.ToString());
-            _currentLobby.SetData("com.ultranet.lobby.map", map);
+            Lobby temp = lobby.Value;
+
+            temp.MaxMembers = maxPlayers;
+            temp.SetFriendsOnly();
+            temp.SetData("com.ultranet.lobby.version", PluginInfo.VERSION);
+            temp.SetData("com.ultranet.lobby.allowPvP", allowPvP.ToString());
+            temp.SetData("com.ultranet.lobby.map", map);
 
             switch (type)
             {
                 case LobbyType.Public:
-                    _currentLobby.SetPublic();
+                    temp.SetPublic();
                     break;
                 case LobbyType.FriendsOnly:
-                    _currentLobby.SetFriendsOnly();
+                    temp.SetFriendsOnly();
                     break;
 
                 default:
                 case LobbyType.Private:
-                    _currentLobby.SetPrivate();
+                    temp.SetPrivate();
                     break;
             }
 
-            _currentLobby.SetJoinable(true);
+            temp.SetJoinable(true);
+            CurrentLobby = temp;
+        }
+
+        public static void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
+        {
+            if (!IsHost || SceneHelper.CurrentScene == "Main Menu")
+                return;
+
+            CurrentLobby.SetData("com.ultranet.lobby.map", SceneHelper.CurrentScene);
+            CurrentLobbyInfo.Map = SceneHelper.CurrentScene;
         }
     }
 }

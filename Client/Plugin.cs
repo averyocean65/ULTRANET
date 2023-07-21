@@ -3,6 +3,7 @@
 using BepInEx;
 using BepInEx.Logging;
 using Steamworks;
+using UnityEngine.SceneManagement;
 
 namespace ULTRANET
 {
@@ -49,6 +50,9 @@ namespace ULTRANET
             SteamMatchmaking.OnLobbyInvite += NetworkManager.OnLobbyInvite;
             SteamMatchmaking.OnLobbyGameCreated += NetworkManager.OnLobbyGameCreated;
             SteamFriends.OnGameLobbyJoinRequested += NetworkManager.OnGameLobbyJoinRequested;
+
+            // Scenes
+            SceneManager.sceneLoaded += NetworkManager.OnSceneLoaded;
 
             // Config
             _config = new ConfigUI();

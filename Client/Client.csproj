@@ -69,6 +69,8 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="ConfigUI.cs"/>
+        <Compile Include="LobbyInfo.cs"/>
+        <Compile Include="Map.cs"/>
         <Compile Include="NetworkManager.cs"/>
         <Compile Include="Plugin.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>

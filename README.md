@@ -1,3 +1,5 @@
+# Disclaimer
+ULTRANET is now deprecated and will no longer continue being supported, as the work of the mod founder, averyocean65, has been shifted to finishing MULTIKILL. If you want a list of multiplayer mod alternatives, check out MULTIKILL (if it's released by the time you're reading this) or [JAKET](https://github.com/xzxADIxzx/Join-and-kill-em-together).
 # ULTRANET
 The Open-Source ULTRAKILL Multiplayer Mod
 
